@@ -26,29 +26,9 @@ Status tiket tidak dijawab lewat RAG karena sifatnya data spesifik yang butuh pe
 
 ## 2. Desain Workflow
 
-```
-            POST /ask {"query": "..."}
-                      │
-                      ▼
-              ┌───────────────┐
-              │ Intent        │   router.py → detect_intent()
-              │ Detection     │
-              └───────┬───────┘
-          ┌───────────┴────────────┐
-          ▼                        ▼
-   intent = faq             intent = ticket_status
-          │                        │
-          ▼                        ▼
- ┌──────────────────┐     ┌──────────────────────┐
- │ RAG (rag.py)     │     │ Tool call (tools.py) │
- │ 1. embed query   │     │ 1. extract_ticket_id │
- │ 2. FAISS top-3   │     │ 2. cari di CSV       │
- │ 3. prompt + LLM  │     │ 3. format jawaban    │
- └────────┬─────────┘     └──────────┬───────────┘
-          └───────────┬──────────────┘
-                      ▼
-      {"status": "...", "intent": "...", "data": "..."}
-```
+![Diagram workflow IT Helpdesk Assistant](workflow.jpg)
+
+Alur singkat: query masuk lewat `POST /ask` → intent detection (`detect_intent()` di `router.py`) → jika `faq` diarahkan ke RAG (embed query, FAISS top-3, prompt + LLM), jika `ticket_status` diarahkan ke tool call (ekstrak ID tiket, lookup CSV, format jawaban) → response `{status, intent, data}`.
 
 ### Kriteria intent
 
